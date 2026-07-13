@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Query } from "@tanstack/react-query";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ClerkProvider} from '@clerk/nextjs'
 
 
 const outfitHeading = Outfit({subsets:['latin'],variable:'--font-heading'});
@@ -37,6 +38,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", dmSans.variable, outfitHeading.variable)}
     >
       <body className="min-h-full flex flex-col">
+        <ClerkProvider>
       <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -47,6 +49,7 @@ export default function RootLayout({
               {children}
             </QueryProvider>
           </ThemeProvider>
+         </ClerkProvider>
       
       
       </body>
