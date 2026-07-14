@@ -21,14 +21,14 @@ export default function FragmentDownload({
   }
 
   return (
-    <div className="flex h-full items-center justify-center bg-muted/20 p-6">
-      <div className="w-full max-w-2xl rounded-3xl border bg-background p-8 shadow-sm">
-        <div className="mb-6 flex items-center gap-3">
+    <div className="flex h-full items-center justify-center bg-muted/20 p-4 sm:p-6">
+      <div className="w-full max-w-2xl rounded-3xl border bg-background p-5 shadow-sm sm:p-8">
+        <div className="mb-6 flex items-start gap-3">
           <div className="rounded-2xl bg-primary/10 p-3 text-primary">
             <FolderArchiveIcon className="size-6" />
           </div>
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
               {data.title}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -37,8 +37,8 @@ export default function FragmentDownload({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg" className="rounded-full">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button asChild size="lg" className="w-full rounded-full sm:w-auto">
             <a href={downloadHref}>
               <DownloadIcon className="size-4" />
               Download ZIP
@@ -48,7 +48,7 @@ export default function FragmentDownload({
             type="button"
             variant="outline"
             size="lg"
-            className="rounded-full"
+            className="w-full rounded-full sm:w-auto"
             onClick={copyCommands}
           >
             <CopyIcon className="size-4" />

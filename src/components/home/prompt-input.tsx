@@ -80,7 +80,7 @@ export function PromptInput() {
         />
         <InputGroupAddon
           align="block-end"
-          className="w-full justify-between border-t border-border/50 px-3 py-2"
+          className="w-full flex-col gap-2 border-t border-border/50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -89,7 +89,7 @@ export function PromptInput() {
                 variant="outline"
                 size="sm"
                 disabled={isPending}
-                className="h-8 min-w-32 justify-between rounded-full border-border/70 bg-background/70 px-3 shadow-sm hover:bg-background"
+                className="h-9 w-full justify-between rounded-full border-border/70 bg-background/70 px-3 shadow-sm hover:bg-background sm:h-8 sm:min-w-32 sm:w-auto"
               >
                 <span className="flex items-center gap-1.5">
                   <Sparkles className="size-3.5 text-primary" />
@@ -113,13 +113,15 @@ export function PromptInput() {
             </DropdownMenuContent>
           </DropdownMenu>
           <InputGroupButton
-            size="icon-sm"
+            size="sm"
             variant="default"
             onClick={handleSubmit}
             disabled={!prompt.trim() || isPending}
             aria-label="Submit prompt"
+            className="h-9 w-full rounded-full sm:h-8 sm:w-auto sm:rounded-4xl"
           >
             {isPending ? <Spinner className="size-4" /> : <ArrowUp />}
+            <span className="sm:hidden">Build</span>
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
@@ -137,7 +139,7 @@ export function PromptInput() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="rounded-full"
+                  className="w-full justify-start rounded-full min-[520px]:w-auto"
                   disabled={isPending}
                   onClick={() => applySuggestion(templatePrompt)}
                 >
@@ -154,7 +156,7 @@ export function PromptInput() {
             type="button"
             variant="ghost"
             size="sm"
-            className="rounded-full text-muted-foreground"
+            className="w-full rounded-full text-muted-foreground min-[520px]:w-auto"
             disabled={isPending}
             onClick={shuffleSuggestions}
           >

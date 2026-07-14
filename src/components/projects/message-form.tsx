@@ -58,7 +58,7 @@ export default function MessageForm({ projectId }: { projectId: string }) {
         void onSubmit();
       }}
       className={cn(
-        "relative rounded-xl border bg-sidebar p-4 pt-1 transition-all dark:bg-sidebar",
+        "relative rounded-xl border bg-sidebar p-3 pt-1 transition-all dark:bg-sidebar sm:p-4 sm:pt-1",
         isFocused && "shadow-lg ring-2 ring-primary/20"
       )}
     >
@@ -72,7 +72,7 @@ export default function MessageForm({ projectId }: { projectId: string }) {
         minRows={3}
         maxRows={8}
         className={cn(
-          "w-full resize-none border-none bg-transparent pt-4 outline-none",
+          "w-full resize-none border-none bg-transparent pt-3 text-sm outline-none sm:pt-4",
           isPending && "opacity-50"
         )}
         onKeyDown={(event) => {
@@ -83,7 +83,7 @@ export default function MessageForm({ projectId }: { projectId: string }) {
         }}
       />
 
-      <div className="flex items-end justify-between gap-x-2 pt-2">
+      <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="font-mono text-[10px] text-muted-foreground">
           <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             <span>&#8984;</span>Enter
@@ -91,7 +91,10 @@ export default function MessageForm({ projectId }: { projectId: string }) {
           &nbsp; to submit
         </div>
         <Button
-          className={cn("size-8 rounded-full", isPending && "border bg-muted-foreground")}
+          className={cn(
+            "h-9 w-full rounded-full sm:size-8 sm:w-auto",
+            isPending && "border bg-muted-foreground"
+          )}
           disabled={isPending || !content.trim()}
           type="submit"
         >

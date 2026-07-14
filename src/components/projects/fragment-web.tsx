@@ -38,7 +38,7 @@ export default function FragmentWeb({ data }: { data: ProjectFragment }) {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex items-center gap-x-2 border-b bg-sidebar p-2">
+      <div className="flex flex-wrap items-center gap-2 border-b bg-sidebar p-2">
         <Hint text="Refresh" side="bottom" align="start">
           <Button size="sm" variant="outline" onClick={onRefresh}>
             <RefreshCcw />
@@ -54,7 +54,7 @@ export default function FragmentWeb({ data }: { data: ProjectFragment }) {
             variant="outline"
             onClick={onCopy}
             disabled={!data.sandboxUrl || copied}
-            className="flex-1 justify-start text-start font-normal"
+            className="order-3 w-full justify-start text-start font-normal sm:order-none sm:flex-1"
           >
             <span className="truncate">{data.sandboxUrl}</span>
           </Button>

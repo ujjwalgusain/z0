@@ -44,16 +44,16 @@ export default function ProjectHeader({ projectId }: { projectId: string }) {
   const { setTheme, theme } = useTheme();
 
   return (
-    <header className="flex items-center justify-between border-b p-2">
+    <header className="flex items-center justify-between gap-2 border-b p-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="!pl-2 transition-opacity hover:bg-transparent hover:opacity-75 focus-visible:ring-0"
+            className="min-w-0 max-w-full !pl-2 transition-opacity hover:bg-transparent hover:opacity-75 focus-visible:ring-0"
           >
             <Z0Mark className="h-7 w-auto shrink-0" />
-            <span className="text-sm font-medium capitalize">
+            <span className="truncate text-sm font-medium capitalize">
               {isPending ? (
                 <Spinner />
               ) : (
