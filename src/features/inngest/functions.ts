@@ -272,6 +272,16 @@ export const codeAgentFunction = inngest.createFunction(
     files = normalized.files;
     result.state.data.files = files;
 
+    const previewValidation = await step.run("validate-generated-app", async () => {
+      const sandbox = await connectSandbox(sandboxId);
+      const validation = await sandbox.commands.run("bunx tsc --noEmit --pretty false");
+
+      return {
+        valid: validation.exitCode === 0,
+        output: `${validation.stdout}\n${validation.stderr}`.trim().slice(0, 2_000),
+      };
+    });
+
     const makeTextAgent = (name: string, system: string, model = primaryModel) =>
       createAgent({ name, system, model });
 
@@ -290,7 +300,8 @@ export const codeAgentFunction = inngest.createFunction(
 
     const isError =
       !result.state.data.summary ||
-      Object.keys(result.state.data.files || {}).length === 0;
+      Object.keys(result.state.data.files || {}).length === 0 ||
+      !previewValidation.valid;
 
 
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
@@ -303,7 +314,9 @@ export const codeAgentFunction = inngest.createFunction(
         return prisma.message.create({
           data: {
             projectId: event.data.projectId,
-            content: "Something went wrong. Please try again",
+            content: previewValidation.valid
+              ? "Something went wrong. Please try again."
+              : "The generated app had a compile error, so z0 did not save a broken preview. Please try again.",
             role: MessageRole.ASSISTANT,
             type: MessageType.ERROR,
           },

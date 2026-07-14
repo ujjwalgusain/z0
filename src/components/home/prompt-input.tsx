@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, RefreshCw } from "lucide-react";
+import { ArrowUp, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { AI_MODELS, DEFAULT_AI_MODEL } from "@/lib/ai-models";
 
@@ -80,15 +81,22 @@ export function PromptInput() {
           align="block-end"
           className="w-full justify-between border-t border-border/50 px-3 py-2"
         >
-          <Select value={model} onValueChange={setModel}>
-            <SelectTrigger size="sm" className="rounded-full border-0 bg-transparent shadow-none">
-              <span className="font-medium">z0 Max</span>
+          <Select value={model} onValueChange={setModel} disabled={isPending}>
+            <SelectTrigger
+              size="sm"
+              aria-label="Choose z0 model"
+              className="min-w-36 rounded-full border-border/70 bg-background/70 px-3 shadow-sm hover:bg-background"
+            >
+              <Sparkles className="size-3.5 text-primary" />
+              <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" align="start" className="min-w-60">
               {AI_MODELS.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
-                  <span>{option.label}</span>
-                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                <SelectItem key={option.id} value={option.id} textValue={option.label}>
+                  <span className="flex flex-col items-start gap-0.5">
+                    <span className="font-medium">{option.label}</span>
+                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

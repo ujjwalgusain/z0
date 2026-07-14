@@ -7,18 +7,18 @@ export type AiModel = {
 export const AI_MODELS: AiModel[] = [
   {
     id: "openai/gpt-4o-mini",
-    label: "GPT-4o mini",
-    description: "Fast and budget-friendly",
+    label: "z0 Lite",
+    description: "Fastest and lowest cost",
   },
   {
     id: "openai/gpt-4.1-mini",
-    label: "GPT-4.1 mini",
-    description: "Stronger coding quality",
+    label: "z0 Mini",
+    description: "Better coding quality",
   },
   {
     id: "google/gemini-2.5-flash",
-    label: "Gemini 2.5 Flash",
-    description: "Fast Gemini option",
+    label: "z0 Flash",
+    description: "Fast Gemini-powered builds",
   },
 ];
 

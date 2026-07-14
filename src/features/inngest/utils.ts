@@ -78,7 +78,8 @@ function toPosixPath(path: string) {
   return path.replace(/\\/g, "/");
 }
 
-const interactiveAppFilePattern = /(^|\/)app\/.*\.(js|jsx|ts|tsx)$/i;
+const interactiveSourceFilePattern =
+  /(^|\/)(?:app|components|src\/components)\/.*\.(js|jsx|ts|tsx)$/i;
 const clientDirectivePattern = /^[\s\r\n]*["']use client["'];?/;
 const interactiveSignalPattern =
   /\b(useState|useEffect|useRef|useMemo|useCallback|useReducer)\b|on[A-Z][A-Za-z]+\s*=|(?:^|[^\w])(window|document|navigator|localStorage|sessionStorage)\b/;
@@ -98,7 +99,7 @@ export function normalizeGeneratedFiles(files: Record<string, string>) {
   const changedPaths: string[] = [];
 
   for (const [path, content] of Object.entries(files)) {
-    if (!interactiveAppFilePattern.test(path)) {
+    if (!interactiveSourceFilePattern.test(path)) {
       continue;
     }
 
