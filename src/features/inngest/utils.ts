@@ -74,10 +74,16 @@ export function isProtectedUiPath(path: string) {
   return protectedUiPathPattern.test(path.replace(/\\/g, "/"));
 }
 
+function toPosixPath(path: string) {
+  return path.replace(/\\/g, "/");
+}
+
 const interactiveAppFilePattern = /(^|\/)app\/.*\.(jsx|tsx)$/i;
 const clientDirectivePattern = /^[\s\r\n]*["']use client["'];?/;
 const interactiveSignalPattern =
   /\b(useState|useEffect|useRef|useMemo|useCallback|useReducer)\b|on[A-Z][A-Za-z]+\s*=|(?:^|[^\w])(window|document|navigator|localStorage|sessionStorage)\b/;
+const nestedRouteImportPattern =
+  /from\s+['"](\.\/[^'"]*\/page(?:\.[^'"]+)?)['"]/g;
 
 function ensureUseClient(content: string): string {
   if (clientDirectivePattern.test(content) || !interactiveSignalPattern.test(content)) {
@@ -100,6 +106,46 @@ export function normalizeGeneratedFiles(files: Record<string, string>) {
     if (normalized !== content) {
       normalizedFiles[path] = normalized;
       changedPaths.push(path);
+    }
+  }
+
+  const rootPagePath = "app/page.tsx";
+  const rootPage = normalizedFiles[rootPagePath];
+
+  if (rootPage) {
+    let nextRootPage = rootPage;
+    let match: RegExpExecArray | null;
+    nestedRouteImportPattern.lastIndex = 0;
+
+    while ((match = nestedRouteImportPattern.exec(rootPage)) !== null) {
+      const importPath = match[1];
+      const routePath = toPosixPath(
+        `app/${importPath.replace(/^\.\//, "")}${importPath.endsWith(".tsx") ? "" : ".tsx"}`
+      );
+
+      const routeContent = normalizedFiles[routePath];
+      if (!routeContent) {
+        continue;
+      }
+
+      const componentPath = routePath.replace(/\/page\.tsx$/, "/generated-view.tsx");
+      const componentImportPath = importPath
+        .replace(/\/page(\.tsx)?$/, "/generated-view")
+        .replace(/\\/g, "/");
+
+      normalizedFiles[componentPath] = routeContent;
+      nextRootPage = nextRootPage.replace(importPath, componentImportPath);
+
+      if (!changedPaths.includes(componentPath)) {
+        changedPaths.push(componentPath);
+      }
+    }
+
+    if (nextRootPage !== rootPage) {
+      normalizedFiles[rootPagePath] = nextRootPage;
+      if (!changedPaths.includes(rootPagePath)) {
+        changedPaths.push(rootPagePath);
+      }
     }
   }
 
