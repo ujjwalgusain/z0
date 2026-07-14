@@ -67,6 +67,13 @@ export async function connectSandbox(sandboxId: string) {
   return Sandbox.connect(sandboxId);
 }
 
+const protectedUiPathPattern =
+  /(^|\/)(src\/)?components\/ui\/.+\.(js|jsx|ts|tsx)$/i;
+
+export function isProtectedUiPath(path: string) {
+  return protectedUiPathPattern.test(path.replace(/\\/g, "/"));
+}
+
 const interactiveAppFilePattern = /(^|\/)app\/.*\.(jsx|tsx)$/i;
 const clientDirectivePattern = /^[\s\r\n]*["']use client["'];?/;
 const interactiveSignalPattern =

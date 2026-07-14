@@ -9,6 +9,7 @@ import z from "zod"
 import {
   agentOutputText,
   connectSandbox,
+  isProtectedUiPath,
   lastAssistantTextMessageContent,
   normalizeGeneratedFiles,
 } from "./utils";
@@ -151,6 +152,14 @@ export const codeAgentFunction = inngest.createFunction(
               "createOrUpdateFiles",
               async () => {
                 try {
+                  const protectedPaths = files
+                    .map((file) => file.path)
+                    .filter(isProtectedUiPath);
+
+                  if (protectedPaths.length > 0) {
+                    return `Refused to modify protected shared UI files: ${protectedPaths.join(", ")}. Create project-local components instead.`;
+                  }
+
                   const updatedFiles = network?.state?.data.files || {};
 
                   const sanbox = await Sandbox.connect(sandboxId);
