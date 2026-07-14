@@ -71,7 +71,7 @@ function FragmentCard({
         <Code2Icon className="mt-0.5 size-4 shrink-0" />
         <div className="flex flex-1 flex-col">
           <span className="line-clamp-1 text-sm font-medium">{fragment.title}</span>
-          <span className="text-sm text-muted-foreground">View code or download locally</span>
+          <span className="text-sm text-muted-foreground">Open demo, view code, or download locally</span>
         </div>
         <ChevronRightIcon className="mt-0.5 size-4 shrink-0" />
       </button>

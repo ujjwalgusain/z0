@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Code, CrownIcon, DownloadIcon } from "lucide-react";
+import { Code, CrownIcon, DownloadIcon, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
@@ -14,6 +14,7 @@ import { Fragment } from "@/generated/prisma/client";
 import ProjectHeader from "./project-header";
 import MessageContainer from "./message-container";
 import FragmentDownload from "./fragment-download";
+import FragmentWeb from "./fragment-web";
 import { FileExplorer } from "./file-explorer";
 
 export type ProjectFragment = Fragment & {
@@ -24,7 +25,7 @@ export function ProjectView({ projectId }: { projectId: string }) {
     const [activeFragment, setActiveFragment] = useState<ProjectFragment | null>(
       null
     );
-    const [tabState, setTabState] = useState<"download" | "code">("download");
+    const [tabState, setTabState] = useState<"preview" | "download" | "code">("preview");
   
     return (
       <div className="h-screen">
@@ -48,12 +49,19 @@ export function ProjectView({ projectId }: { projectId: string }) {
           <ResizablePanel defaultSize={72} minSize={45} className="min-w-0">
             <Tabs
               className="flex h-full flex-col"
-              defaultValue="download"
+              defaultValue="preview"
               value={tabState}
-              onValueChange={(value) => setTabState(value as "download" | "code")}
+              onValueChange={(value) => setTabState(value as "preview" | "download" | "code")}
             >
               <div className="flex w-full items-center gap-x-2 border-b p-2">
                 <TabsList className="h-8 rounded-md border p-0">
+                  <TabsTrigger
+                    value="preview"
+                    className="flex items-center gap-x-2 rounded-md px-3"
+                  >
+                    <EyeIcon className="size-4" />
+                    <span>Demo</span>
+                  </TabsTrigger>
                   <TabsTrigger
                     value="download"
                     className="flex items-center gap-x-2 rounded-md px-3"
@@ -79,6 +87,19 @@ export function ProjectView({ projectId }: { projectId: string }) {
                   </Button>
                 </div>
               </div>
+
+              <TabsContent
+                value="preview"
+                className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+              >
+                {activeFragment ? (
+                  <FragmentWeb data={activeFragment} />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-foreground">
+                    Select a fragment to preview
+                  </div>
+                )}
+              </TabsContent>
   
               <TabsContent
                 value="download"
