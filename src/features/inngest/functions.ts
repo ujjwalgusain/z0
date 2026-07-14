@@ -3,16 +3,36 @@ import { inngest } from "./client";
 import { Sandbox } from "@e2b/code-interpreter";
 import { MessageRole, MessageType } from "@/generated/prisma/enums";
 
-import { createAgent, createNetwork, createState, createTool, gemini } from "@inngest/agent-kit"
+import { createAgent, createNetwork, createState, createTool, openai } from "@inngest/agent-kit"
 import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from "@/lib/prompt";
 import z from "zod"
-import { agentOutputText, captureTaskSummary, connectSandbox, lastAssistantTextMessageContent } from "./utils";
+import { agentOutputText, connectSandbox, lastAssistantTextMessageContent } from "./utils";
 
 export interface CodeAgentState {
   sandboxId: string;
   summary: string;
   files: Record<string, string>;
 }
+
+const aiBaseUrl = process.env.OPENAI_BASE_URL || "https://api.aicredits.in/v1";
+const aiApiKey = process.env.OPENAI_API_KEY;
+const primaryModelId = process.env.AI_MODEL || "openai/gpt-4o-mini";
+
+const createGatewayModel = (model = primaryModelId) => {
+  if (!aiApiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
+
+  return openai({
+    model,
+    apiKey: aiApiKey,
+    baseUrl: aiBaseUrl,
+    defaultParameters: {
+      temperature: 0,
+      max_completion_tokens: 8192,
+    },
+  });
+};
 
 
 export const processTask = inngest.createFunction(
@@ -64,25 +84,13 @@ export const codeAgentFunction = inngest.createFunction(
       { messages: previousMessages }
     );
 
-    const geminiModel = gemini({
-      model: "gemini-3.5-flash",
-      step,
-      apiKey: process.env.GEMINI_API_KEY!,
-      defaultParameters: {
-        generationConfig: {
-          temperature: 0,
-          maxOutputTokens: 8192,
-          thinkingConfig: { thinkingBudget: 0 },
-        }
-      }
-    } as Parameters<typeof gemini>[0]
-    )
+    const primaryModel = createGatewayModel();
 
     const codeAgent = createAgent({
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: gemini({ model: "gemini-3.5-flash" }),
+      model: primaryModel,
       tools: [
         // 1. Terminal
         createTool({
@@ -172,7 +180,7 @@ export const codeAgentFunction = inngest.createFunction(
               try {
                 const sanbox = await Sandbox.connect(sandboxId);
 
-                const contents:any = [];
+                const contents: Array<{ path: string; content: unknown }> = [];
                 console.log(contents)
 
                 for (const file of files) {
@@ -225,7 +233,8 @@ export const codeAgentFunction = inngest.createFunction(
     console.log(result)
     const { summary, files } = result.state.data;
 
-    const makeTextAgent = (name: string, system: string) => createAgent({ name, system, model: geminiModel });
+    const makeTextAgent = (name: string, system: string, model = primaryModel) =>
+      createAgent({ name, system, model });
 
     const fragmentTitleGenerator = makeTextAgent("fragment-title-generator", FRAGMENT_TITLE_PROMPT);
     const responseGenerator = makeTextAgent("response-generator", RESPONSE_PROMPT);
