@@ -17,8 +17,8 @@ export const AI_MODELS: AiModel[] = [
   },
   {
     id: "google/gemini-2.5-flash",
-    label: "z0 Flash",
-    description: "Fast Gemini-powered builds",
+    label: "z0 Max",
+    description: "Most capable coding model",
   },
 ];
 

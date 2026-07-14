@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowUp, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AI_MODELS, DEFAULT_AI_MODEL } from "@/lib/ai-models";
 
 import {
@@ -32,6 +32,7 @@ export function PromptInput() {
   const [model, setModel] = useState(DEFAULT_AI_MODEL);
   const router = useRouter();
   const { mutate: createProject, isPending } = useCreateProject();
+  const selectedModel = AI_MODELS.find((option) => option.id === model) ?? AI_MODELS[0];
 
   function handleSubmit() {
     createProject({ value: prompt, model }, {
@@ -81,26 +82,36 @@ export function PromptInput() {
           align="block-end"
           className="w-full justify-between border-t border-border/50 px-3 py-2"
         >
-          <Select value={model} onValueChange={setModel} disabled={isPending}>
-            <SelectTrigger
-              size="sm"
-              aria-label="Choose z0 model"
-              className="min-w-36 rounded-full border-border/70 bg-background/70 px-3 shadow-sm hover:bg-background"
-            >
-              <Sparkles className="size-3.5 text-primary" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent position="popper" align="start" className="min-w-60">
-              {AI_MODELS.map((option) => (
-                <SelectItem key={option.id} value={option.id} textValue={option.label}>
-                  <span className="flex flex-col items-start gap-0.5">
-                    <span className="font-medium">{option.label}</span>
-                    <span className="text-xs text-muted-foreground">{option.description}</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending}
+                className="h-8 min-w-32 justify-between rounded-full border-border/70 bg-background/70 px-3 shadow-sm hover:bg-background"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-primary" />
+                  {selectedModel.label}
+                </span>
+                <ChevronDown className="size-3.5 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64 p-1.5">
+              <DropdownMenuRadioGroup value={model} onValueChange={setModel}>
+                {AI_MODELS.map((option) => (
+                  <DropdownMenuRadioItem key={option.id} value={option.id} className="items-start py-2.5">
+                    <Sparkles className="mt-0.5 size-4 text-primary" />
+                    <span className="flex flex-col gap-0.5">
+                      <span className="font-medium">{option.label}</span>
+                      <span className="text-xs text-muted-foreground">{option.description}</span>
+                    </span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <InputGroupButton
             size="icon-sm"
             variant="default"

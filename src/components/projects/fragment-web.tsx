@@ -76,7 +76,6 @@ export default function FragmentWeb({ data }: { data: ProjectFragment }) {
       <iframe
         key={fragmentKey}
         className="h-full w-full"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads"
         loading="lazy"
         src={data.sandboxUrl}
         title={data.title}
