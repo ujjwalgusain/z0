@@ -29,6 +29,9 @@ OPENAI_BASE_URL=https://api.aicredits.in/v1
 OPENAI_API_KEY=sk-...
 AI_MODEL=openai/gpt-4o-mini
 GEMINI_MODEL=google/gemini-2.5-flash
+
+# Optional comma-separated allowlist for the z0 Max selector.
+AI_MODELS=openai/gpt-4o-mini,openai/gpt-4.1-mini,google/gemini-2.5-flash
 ```
 
 Set `AI_MODEL=google/gemini-2.5-flash` if you want to switch the active model to Gemini through the same gateway.

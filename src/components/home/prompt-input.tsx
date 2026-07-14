@@ -2,17 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, ChevronDown, RefreshCw } from "lucide-react";
+import { ArrowUp, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
-  InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { AI_MODELS, DEFAULT_AI_MODEL } from "@/lib/ai-models";
 
 import {
   getRandomPromptTemplate,
@@ -22,11 +28,12 @@ import { useCreateProject } from "@/features/projects/hooks/projects";
 
 export function PromptInput() {
   const [prompt, setPrompt] = useState("");
+  const [model, setModel] = useState(DEFAULT_AI_MODEL);
   const router = useRouter();
   const { mutate: createProject, isPending } = useCreateProject();
 
   function handleSubmit() {
-    createProject(prompt, {
+    createProject({ value: prompt, model }, {
       onSuccess: (project) => {
         router.push(`/projects/${project.id}`);
       },
@@ -58,7 +65,7 @@ export function PromptInput() {
         <InputGroupTextarea
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="Ask chai0 to build..."
+          placeholder="Ask z0 to build..."
           rows={4}
           // disabled={isPending}
           className="min-h-24 px-4 pt-4 text-sm"
@@ -73,10 +80,19 @@ export function PromptInput() {
           align="block-end"
           className="w-full justify-between border-t border-border/50 px-3 py-2"
         >
-          <Button variant="outline" size="sm" className="rounded-full">
-            <InputGroupText>chai0 Max</InputGroupText>
-            <ChevronDown className="size-3 opacity-60" />
-          </Button>
+          <Select value={model} onValueChange={setModel}>
+            <SelectTrigger size="sm" className="rounded-full border-0 bg-transparent shadow-none">
+              <span className="font-medium">z0 Max</span>
+            </SelectTrigger>
+            <SelectContent>
+              {AI_MODELS.map((option) => (
+                <SelectItem key={option.id} value={option.id}>
+                  <span>{option.label}</span>
+                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <InputGroupButton
             size="icon-sm"
             variant="default"

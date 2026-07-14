@@ -78,7 +78,7 @@ function toPosixPath(path: string) {
   return path.replace(/\\/g, "/");
 }
 
-const interactiveAppFilePattern = /(^|\/)app\/.*\.(jsx|tsx)$/i;
+const interactiveAppFilePattern = /(^|\/)app\/.*\.(js|jsx|ts|tsx)$/i;
 const clientDirectivePattern = /^[\s\r\n]*["']use client["'];?/;
 const interactiveSignalPattern =
   /\b(useState|useEffect|useRef|useMemo|useCallback|useReducer)\b|on[A-Z][A-Za-z]+\s*=|(?:^|[^\w])(window|document|navigator|localStorage|sessionStorage)\b/;
@@ -109,10 +109,12 @@ export function normalizeGeneratedFiles(files: Record<string, string>) {
     }
   }
 
-  const rootPagePath = "app/page.tsx";
-  const rootPage = normalizedFiles[rootPagePath];
+  const rootPagePath = ["app/page.tsx", "app/page.jsx", "app/page.js"].find(
+    (path) => normalizedFiles[path]
+  );
+  const rootPage = rootPagePath ? normalizedFiles[rootPagePath] : undefined;
 
-  if (rootPage) {
+  if (rootPagePath && rootPage) {
     let nextRootPage = rootPage;
     let match: RegExpExecArray | null;
     nestedRouteImportPattern.lastIndex = 0;

@@ -27,8 +27,8 @@ export const useCreateProject = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (value: string) =>
-            unwrapActionResult(await createProject(value)),
+        mutationFn: async ({ value, model }: { value: string; model: string }) =>
+            unwrapActionResult(await createProject(value, model)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
         }

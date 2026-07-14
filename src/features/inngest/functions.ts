@@ -5,6 +5,7 @@ import { MessageRole, MessageType } from "@/generated/prisma/enums";
 
 import { createAgent, createNetwork, createState, createTool, openai } from "@inngest/agent-kit"
 import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from "@/lib/prompt";
+import { DEFAULT_AI_MODEL, isSupportedAiModel } from "@/lib/ai-models";
 import z from "zod"
 import {
   agentOutputText,
@@ -22,7 +23,7 @@ export interface CodeAgentState {
 
 const aiBaseUrl = process.env.OPENAI_BASE_URL || "https://api.aicredits.in/v1";
 const aiApiKey = process.env.OPENAI_API_KEY;
-const primaryModelId = process.env.AI_MODEL || "openai/gpt-4o-mini";
+const primaryModelId = process.env.AI_MODEL || DEFAULT_AI_MODEL;
 
 const createGatewayModel = (model = primaryModelId) => {
   if (!aiApiKey) {
@@ -90,7 +91,11 @@ export const codeAgentFunction = inngest.createFunction(
       { messages: previousMessages }
     );
 
-    const primaryModel = createGatewayModel();
+    const requestedModel = event.data.model;
+    const selectedModelId = isSupportedAiModel(requestedModel)
+      ? requestedModel
+      : primaryModelId;
+    const primaryModel = createGatewayModel(selectedModelId);
 
     const codeAgent = createAgent({
       name: "code-agent",

@@ -40,7 +40,7 @@ function ShimmerMessages() {
 /**
  * Placeholder assistant message shown while a response is being generated.
  *
- * Mirrors the assistant message layout (chai0 mark + content) but renders
+ * Mirrors the assistant message layout (z0 mark + content) but renders
  * rotating {@link ShimmerMessages} instead of real content.
  */
 export default function MessageLoading() {

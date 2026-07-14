@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
  * Props for {@link Z0Logo}.
  *
  * @property className - Extra classes applied to the wrapper.
- * @property showWordmark - Whether to render the "chai0" text next to the mark.
+ * @property showWordmark - Whether to render the "z0" text next to the mark.
  */
 type Z0LogoProps = {
   className?: string;
@@ -12,7 +12,7 @@ type Z0LogoProps = {
 };
 
 /**
- * The standalone chai0 glyph (SVG mark) without the wordmark.
+ * The standalone z0 glyph (SVG mark) without the wordmark.
  *
  * Inherits color via `currentColor` so it adapts to the surrounding text color.
  *
@@ -45,7 +45,7 @@ function Z0Mark({ className }: { className?: string }) {
 }
 
 /**
- * The chai0 brand logo: the glyph mark plus an optional "chai0" wordmark.
+ * The z0 brand logo: the glyph mark plus an optional "z0" wordmark.
  *
  * @param props - See {@link Z0LogoProps}.
  */

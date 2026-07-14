@@ -75,7 +75,7 @@ function UserMessage({ content }: { content: string }) {
 /**
  * A message rendered by the assistant.
  *
- * Shows the chai0 mark, a hover-revealed timestamp, the markdown response, and —
+ * Shows the z0 mark, a hover-revealed timestamp, the markdown response, and —
  * for successful results — a {@link FragmentCard} linking to the generated app.
  * Error-type messages are styled in red.
  *

@@ -4,9 +4,10 @@ import { inngest } from "@/features/inngest/client";
 import { MessageRole, MessageType } from "@/generated/prisma/client";
 import { generateSlug } from "random-word-slugs";
 import { prisma } from "@/lib/db";
+import { DEFAULT_AI_MODEL, isSupportedAiModel } from "@/lib/ai-models";
 
 
-export const createProject = async (value: string) => {
+export const createProject = async (value: string, model = DEFAULT_AI_MODEL) => {
     const user = await getCurrentUser();
 
     if (!user) {
@@ -34,7 +35,8 @@ export const createProject = async (value: string) => {
         name:"code-agent/run",
         data:{
             value,
-            projectId:project.id
+            projectId:project.id,
+            model: isSupportedAiModel(model) ? model : DEFAULT_AI_MODEL,
         }
        })
 
