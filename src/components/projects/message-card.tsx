@@ -10,8 +10,24 @@ import { cn } from "@/lib/utils";
 import type { Fragment } from "@/generated/prisma/client";
 import { MessageRole, MessageType } from "@/generated/prisma/enums";
 import { format } from "date-fns";
-import { ChevronRightIcon, Code2Icon } from "lucide-react";
+import { ChevronRightIcon, Code2Icon, DownloadIcon } from "lucide-react";
 import {  Z0Mark } from "@/components/brand/z0-logo";
+import { Button } from "@/components/ui/button";
+
+function LocalRunSteps() {
+  return (
+    <div className="rounded-xl border bg-muted/30 p-4">
+      <p className="text-sm font-semibold">Run locally</p>
+      <ol className="mt-2 space-y-1 text-sm text-muted-foreground">
+        <li>1. Download the ZIP file and extract it.</li>
+        <li>2. Open the extracted folder in your terminal.</li>
+        <li>3. Run <code>npm install</code>.</li>
+        <li>4. Run <code>npm run dev</code>.</li>
+        <li>5. Open <code>http://localhost:3000</code>.</li>
+      </ol>
+    </div>
+  );
+}
 
 /**
  * Clickable card representing a generated fragment inside an assistant message.
@@ -32,28 +48,41 @@ function FragmentCard({
   isActiveFragment: boolean;
   onFragmentClick: (fragment: ProjectFragment) => void;
 }) {
+  const downloadHref = `/api/fragments/${fragment.id}/download`;
+
   return (
-    <button
-      type="button"
+    <div
       className={cn(
-        "flex w-fit items-start gap-2 rounded-lg border bg-muted p-2 text-start transition-colors hover:bg-secondary",
+        "flex w-full max-w-xl items-start gap-3 rounded-xl border bg-muted p-2",
         isActiveFragment &&
-          "border-primary bg-primary text-primary-foreground hover:bg-primary"
+          "border-primary bg-primary/10"
       )}
-      onClick={() =>
-        onFragmentClick({
-          ...fragment,
-          files: parseFragmentFiles(fragment.files),
-        })
-      }
     >
-      <Code2Icon className="mt-0.5 size-4" />
-      <div className="flex flex-1 flex-col">
-        <span className="line-clamp-1 text-sm font-medium">{fragment.title}</span>
-        <span className="text-sm">Preview</span>
-      </div>
-      <ChevronRightIcon className="mt-0.5 size-4" />
-    </button>
+      <button
+        type="button"
+        className="flex flex-1 items-start gap-2 text-start"
+        onClick={() =>
+          onFragmentClick({
+            ...fragment,
+            files: parseFragmentFiles(fragment.files),
+          })
+        }
+      >
+        <Code2Icon className="mt-0.5 size-4 shrink-0" />
+        <div className="flex flex-1 flex-col">
+          <span className="line-clamp-1 text-sm font-medium">{fragment.title}</span>
+          <span className="text-sm text-muted-foreground">View code or download locally</span>
+        </div>
+        <ChevronRightIcon className="mt-0.5 size-4 shrink-0" />
+      </button>
+
+      <Button asChild size="sm" variant="outline" className="shrink-0 rounded-full">
+        <a href={downloadHref}>
+          <DownloadIcon className="size-4" />
+          Download
+        </a>
+      </Button>
+    </div>
   );
 }
 
@@ -118,11 +147,14 @@ function AssistantMessage({
       <div className="flex flex-col gap-y-4 pl-8.5">
         <Response>{content}</Response>
         {fragment && type === MessageType.RESULT && (
-          <FragmentCard
-            fragment={fragment}
-            isActiveFragment={isActiveFragment}
-            onFragmentClick={onFragmentClick}
-          />
+          <>
+            <FragmentCard
+              fragment={fragment}
+              isActiveFragment={isActiveFragment}
+              onFragmentClick={onFragmentClick}
+            />
+            <LocalRunSteps />
+          </>
         )}
       </div>
     </div>
