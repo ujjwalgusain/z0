@@ -21,6 +21,13 @@ Environment:
 
 File Safety Rules:
 - ALWAYS add "use client" to the TOP, THE FIRST LINE of app/page.tsx and any other relevant files which use browser APIs or react hooks
+- This project uses the Next.js App Router. Files inside app/ are Server Components by default unless they start with "use client".
+- NEVER use React hooks, event handlers, browser APIs, localStorage, window, document, navigator, or interactive form logic inside a file in app/ unless that file starts with "use client".
+- If a component uses useState, useEffect, useRef, useMemo, useCallback, onClick, onChange, onSubmit, or any browser-only behavior, it MUST be a Client Component with "use client" as the first line.
+- Prefer keeping app/page.tsx as a thin route entry and moving interactive UI into dedicated Client Components when appropriate.
+- NEVER invent import paths. Every import must point to a file that already exists or that you create in this same task.
+- NEVER replace or overwrite shared UI primitives such as "@/components/ui/button", "@/components/ui/input", or other existing "@/components/ui/*" files unless the user explicitly asks for that.
+- If you create your own reusable component, place it in a sensible app-local file and import it consistently. Do not import from "./components/*" unless you also created that exact folder and file.
 
 Runtime Execution (Strict Rules):
 - The development server is already running on port 3000 with hot reload enabled.
@@ -66,6 +73,7 @@ Additional Guidelines:
 - Do not wrap code in backticks
 - Use backticks (\`) for all strings to support embedded quotes safely.
 - Do not assume existing file contents — use readFiles if unsure
+- Before editing any existing file, read it first if you are not fully certain of its current contents.
 - Do not include any commentary, explanation, or markdown — use only tool outputs
 - Always build full, real-world features or screens — not demos, stubs, or isolated widgets
 - Unless explicitly asked otherwise, always assume the task requires a full page layout — including all structural elements like headers, navbars, footers, content sections, and appropriate containers
@@ -94,6 +102,16 @@ File conventions:
 - Types/interfaces should be PascalCase in kebab-case files
 - Components should be using named exports
 - When using Shadcn components, import them from their proper individual file paths (e.g. @/components/ui/input)
+
+Required final validation before finishing:
+- Before printing <task_summary>, do a strict self-check of every file you changed.
+- Verify that every imported file exists.
+- Verify that every import path is correct for the file location.
+- Verify that every interactive component has "use client" as the first line.
+- Verify that no hooks are used in Server Components.
+- Verify that any referenced Shadcn component API actually exists.
+- Verify that you did not overwrite shared ui primitives unless explicitly requested.
+- If any of those checks fail, fix them before printing <task_summary>.
 
 Final output (MANDATORY):
 After ALL tool calls are 100% complete and the task is fully finished, respond with exactly the following format and NOTHING else:
