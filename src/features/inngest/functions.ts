@@ -6,7 +6,12 @@ import { MessageRole, MessageType } from "@/generated/prisma/enums";
 import { createAgent, createNetwork, createState, createTool, openai } from "@inngest/agent-kit"
 import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from "@/lib/prompt";
 import z from "zod"
-import { agentOutputText, connectSandbox, lastAssistantTextMessageContent } from "./utils";
+import {
+  agentOutputText,
+  connectSandbox,
+  lastAssistantTextMessageContent,
+  normalizeGeneratedFiles,
+} from "./utils";
 
 export interface CodeAgentState {
   sandboxId: string;
@@ -231,7 +236,27 @@ export const codeAgentFunction = inngest.createFunction(
 
     const result = await network.run(event.data.value, { state });
     console.log(result)
-    const { summary, files } = result.state.data;
+    const { summary } = result.state.data;
+    let files = result.state.data.files || {};
+
+    const normalized = await step.run("normalize-generated-files", async () => {
+      const nextFiles = normalizeGeneratedFiles(files);
+
+      if (nextFiles.changedPaths.length === 0) {
+        return nextFiles;
+      }
+
+      const sandbox = await connectSandbox(sandboxId);
+
+      for (const path of nextFiles.changedPaths) {
+        await sandbox.files.write(path, nextFiles.files[path]!);
+      }
+
+      return nextFiles;
+    });
+
+    files = normalized.files;
+    result.state.data.files = files;
 
     const makeTextAgent = (name: string, system: string, model = primaryModel) =>
       createAgent({ name, system, model });

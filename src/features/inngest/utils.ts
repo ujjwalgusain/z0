@@ -66,3 +66,35 @@ export function captureTaskSummary(
 export async function connectSandbox(sandboxId: string) {
   return Sandbox.connect(sandboxId);
 }
+
+const interactiveAppFilePattern = /(^|\/)app\/.*\.(jsx|tsx)$/i;
+const clientDirectivePattern = /^[\s\r\n]*["']use client["'];?/;
+const interactiveSignalPattern =
+  /\b(useState|useEffect|useRef|useMemo|useCallback|useReducer)\b|on[A-Z][A-Za-z]+\s*=|(?:^|[^\w])(window|document|navigator|localStorage|sessionStorage)\b/;
+
+function ensureUseClient(content: string): string {
+  if (clientDirectivePattern.test(content) || !interactiveSignalPattern.test(content)) {
+    return content;
+  }
+
+  return `"use client";\n\n${content}`;
+}
+
+export function normalizeGeneratedFiles(files: Record<string, string>) {
+  const normalizedFiles = { ...files };
+  const changedPaths: string[] = [];
+
+  for (const [path, content] of Object.entries(files)) {
+    if (!interactiveAppFilePattern.test(path)) {
+      continue;
+    }
+
+    const normalized = ensureUseClient(content);
+    if (normalized !== content) {
+      normalizedFiles[path] = normalized;
+      changedPaths.push(path);
+    }
+  }
+
+  return { files: normalizedFiles, changedPaths };
+}
