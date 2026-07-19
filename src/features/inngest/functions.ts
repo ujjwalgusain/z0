@@ -21,6 +21,9 @@ export interface CodeAgentState {
   files: Record<string, string>;
 }
 
+const PREVIEW_PORT = 3000;
+const PREVIEW_START_COMMAND = "bun --bun run dev --turbo --hostname 0.0.0.0";
+
 const aiBaseUrl = process.env.OPENAI_BASE_URL || "https://api.aicredits.in/v1";
 const aiApiKey = process.env.OPENAI_API_KEY;
 const primaryModelId = process.env.AI_MODEL || DEFAULT_AI_MODEL;
@@ -40,6 +43,47 @@ const createGatewayModel = (model = primaryModelId) => {
     },
   });
 };
+
+async function isPreviewServerReady(sandbox: Sandbox) {
+  try {
+    const result = await sandbox.commands.run(
+      `curl -fsS http://localhost:${PREVIEW_PORT} >/dev/null`,
+      { timeoutMs: 5000 }
+    );
+
+    return result.exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function ensurePreviewServer(sandboxId: string) {
+  const sandbox = await connectSandbox(sandboxId);
+
+  if (await isPreviewServerReady(sandbox)) {
+    return { ready: true, started: false };
+  }
+
+  await sandbox.commands.run(PREVIEW_START_COMMAND, {
+    background: true,
+    timeoutMs: 1000,
+  });
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    if (await isPreviewServerReady(sandbox)) {
+      return { ready: true, started: true };
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+  }
+
+  const processes = await sandbox.commands.list().catch(() => []);
+  return {
+    ready: false,
+    started: true,
+    processes: processes.map((process) => process.cmd).join("\n"),
+  };
+}
 
 
 export const processTask = inngest.createFunction(
@@ -292,10 +336,15 @@ export const codeAgentFunction = inngest.createFunction(
       !result.state.data.summary ||
       Object.keys(result.state.data.files || {}).length === 0;
 
+    const previewServer = isError
+      ? { ready: false, started: false }
+      : await step.run("ensure-preview-server", async () => {
+          return ensurePreviewServer(sandboxId);
+        });
 
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await connectSandbox(sandboxId);
-      return `https://${sandbox.getHost(3000)}`
+      return `https://${sandbox.getHost(PREVIEW_PORT)}`
     });
 
     await step.run("save-result", async () => {
@@ -315,7 +364,9 @@ export const codeAgentFunction = inngest.createFunction(
       return prisma.message.create({
         data: {
           projectId: event.data.projectId,
-          content: responseText,
+          content: previewServer.ready
+            ? responseText
+            : `${responseText}\n\nThe app was generated, but the preview server did not start on port 3000. You can still download the code and run it locally.`,
           role: MessageRole.ASSISTANT,
           type: MessageType.RESULT,
           fragments: {
