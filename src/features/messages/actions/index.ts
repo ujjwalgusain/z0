@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/features/auth/actions";
 import { inngest } from "@/features/inngest/client";
 import { prisma } from "@/lib/db";
 import { MessageRole, MessageType } from "@/generated/prisma/client";
+import { DEFAULT_AI_MODEL } from "@/lib/ai-models";
 
 /**
  * Create a new user message in a project and kick off an agent run.
@@ -48,6 +49,7 @@ export const createMessage = async (value: string, projectId: string) => {
     data: {
       value,
       projectId,
+      model: DEFAULT_AI_MODEL,
     },
   });
 

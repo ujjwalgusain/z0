@@ -23,6 +23,7 @@ export interface CodeAgentState {
 
 const PREVIEW_PORT = 3000;
 const PREVIEW_START_COMMAND = "bun --bun run dev --turbo --hostname 0.0.0.0";
+const taskSummaryPattern = /<\s*task_summary\s*>/i;
 
 const aiBaseUrl = process.env.OPENAI_BASE_URL || "https://api.aicredits.in/v1";
 const aiApiKey = process.env.OPENAI_API_KEY;
@@ -83,6 +84,20 @@ async function ensurePreviewServer(sandboxId: string) {
     started: true,
     processes: processes.map((process) => process.cmd).join("\n"),
   };
+}
+
+function buildAgentFailureMessage(summary: string | undefined, files: Record<string, string>) {
+  const reasons: string[] = [];
+
+  if (!summary) {
+    reasons.push("the agent did not finish with a task summary");
+  }
+
+  if (Object.keys(files).length === 0) {
+    reasons.push("no generated files were saved");
+  }
+
+  return `Something went wrong: ${reasons.join(" and ")}. Please try again with a slightly simpler prompt.`;
 }
 
 
@@ -266,7 +281,7 @@ export const codeAgentFunction = inngest.createFunction(
             lastAssistantTextMessageContent(result);
 
           if (lastAssistantMessageText && network) {
-            if (lastAssistantMessageText.includes("<task_summary>")) {
+            if (taskSummaryPattern.test(lastAssistantMessageText)) {
               network.state.data.summary = lastAssistantMessageText;
             }
           }
@@ -352,7 +367,7 @@ export const codeAgentFunction = inngest.createFunction(
         return prisma.message.create({
           data: {
             projectId: event.data.projectId,
-            content: "Something went wrong. Please try again.",
+            content: buildAgentFailureMessage(result.state.data.summary, result.state.data.files || {}),
             role: MessageRole.ASSISTANT,
             type: MessageType.ERROR,
           },
