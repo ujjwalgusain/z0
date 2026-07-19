@@ -22,7 +22,7 @@ export interface CodeAgentState {
 }
 
 const PREVIEW_PORT = 3000;
-const PREVIEW_START_COMMAND = "bun --bun run dev --turbo --hostname 0.0.0.0";
+const PREVIEW_START_COMMAND = `bun --bun run dev --hostname 0.0.0.0 --port ${PREVIEW_PORT}`;
 const taskSummaryPattern = /<\s*task_summary\s*>/i;
 
 const aiBaseUrl = process.env.OPENAI_BASE_URL || "https://api.aicredits.in/v1";
@@ -48,18 +48,25 @@ const createGatewayModel = (model = primaryModelId) => {
 async function isPreviewServerReady(sandbox: Sandbox) {
   try {
     const result = await sandbox.commands.run(
-      `curl -fsS http://localhost:${PREVIEW_PORT} >/dev/null`,
+      `curl -sS -o /dev/null -w "%{http_code}" http://localhost:${PREVIEW_PORT}`,
       { timeoutMs: 5000 }
     );
 
-    return result.exitCode === 0;
+    return result.exitCode === 0 && result.stdout.trim().length > 0;
   } catch {
     return false;
   }
 }
 
+function formatPreviewLogs(logs: { stdout: string; stderr: string }, processes: string) {
+  const output = [logs.stderr, logs.stdout, processes].filter(Boolean).join("\n").trim();
+
+  return output.slice(-1200);
+}
+
 async function ensurePreviewServer(sandboxId: string) {
   const sandbox = await connectSandbox(sandboxId);
+  const logs = { stdout: "", stderr: "" };
 
   if (await isPreviewServerReady(sandbox)) {
     return { ready: true, started: false };
@@ -68,9 +75,15 @@ async function ensurePreviewServer(sandboxId: string) {
   await sandbox.commands.run(PREVIEW_START_COMMAND, {
     background: true,
     timeoutMs: 1000,
+    onStdout: (data) => {
+      logs.stdout += data;
+    },
+    onStderr: (data) => {
+      logs.stderr += data;
+    },
   });
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 16; attempt++) {
     if (await isPreviewServerReady(sandbox)) {
       return { ready: true, started: true };
     }
@@ -82,8 +95,19 @@ async function ensurePreviewServer(sandboxId: string) {
   return {
     ready: false,
     started: true,
-    processes: processes.map((process) => process.cmd).join("\n"),
+    logs: formatPreviewLogs(logs, processes.map((process) => process.cmd).join("\n")),
   };
+}
+
+function buildPreviewFailureMessage(
+  responseText: string,
+  previewServer: { ready: boolean; started: boolean; logs?: string }
+) {
+  const startupDetails = previewServer.logs
+    ? `\n\nPreview startup details:\n\`\`\`txt\n${previewServer.logs}\n\`\`\``
+    : "";
+
+  return `${responseText}\n\nThe app was generated, but the preview server did not start on port 3000. You can still download the code and run it locally.${startupDetails}`;
 }
 
 function buildAgentFailureMessage(summary: string | undefined, files: Record<string, string>) {
@@ -381,7 +405,7 @@ export const codeAgentFunction = inngest.createFunction(
           projectId: event.data.projectId,
           content: previewServer.ready
             ? responseText
-            : `${responseText}\n\nThe app was generated, but the preview server did not start on port 3000. You can still download the code and run it locally.`,
+            : buildPreviewFailureMessage(responseText, previewServer),
           role: MessageRole.ASSISTANT,
           type: MessageType.RESULT,
           fragments: {
